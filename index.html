@@ -88,13 +88,6 @@
     input[type="text"] { flex: 2; min-width: 200px; }
     input[type="datetime-local"] { flex: 1; min-width: 180px; color-scheme: dark; }
     textarea { width: 100%; resize: vertical; min-height: 70px; }
-    
-    .file-input-wrapper {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .file-hint { font-size: 11px; color: #64748b; }
 
     input:focus, textarea:focus { border-color: #38bdf8; box-shadow: 0 0 12px rgba(56, 189, 248, 0.3); }
 
@@ -160,6 +153,7 @@
       font-weight: 600;
       text-decoration: none;
       transition: 0.2s;
+      width: fit-content;
     }
     .doc-link:hover { background: rgba(56, 189, 248, 0.2); }
 
@@ -184,6 +178,7 @@
     .undo-btn { background: rgba(245, 158, 11, 0.2); border: 1px solid #f59e0b; color: #fbbf24; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; }
 
     .edit-box { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+    .edit-label { font-size: 11px; color: #38bdf8; font-weight: 700; }
     .btn-row { display: flex; gap: 8px; justify-content: flex-end; }
     .save-btn { background: #22c55e; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
     .cancel-btn { background: #64748b; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
@@ -208,13 +203,6 @@
         <input type="datetime-local" id="dueDateInput">
       </div>
       <textarea id="descInput" placeholder="DESCRIPTION / NOTA KERJA..."></textarea>
-      
-      <!-- Input File -->
-      <div class="file-input-wrapper">
-        <input type="file" id="fileInput" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx">
-        <span class="file-hint">📎 Upload gambar/fail (Had maksimum: 2 MB per fail)</span>
-      </div>
-
       <button class="add-btn" onclick="addTask()">+ TAMBAH KERJA</button>
     </div>
   </div>
@@ -278,28 +266,12 @@
     });
   }
 
-  async function addTask() {
+  function addTask() {
     let titleInput = document.getElementById("taskInput");
     let dueDateInput = document.getElementById("dueDateInput");
     let descInput = document.getElementById("descInput");
-    let fileInput = document.getElementById("fileInput");
 
     if (!titleInput.value.trim()) return alert("Sila masukkan nama kerja!");
-
-    let fileData = null;
-    let fileName = null;
-
-    if (fileInput.files.length > 0) {
-      let file = fileInput.files[0];
-      
-      // Semak had saiz fail (2MB = 2 * 1024 * 1024 bytes)
-      if (file.size > 2 * 1024 * 1024) {
-        return alert("Saiz fail terlalu besar! Sila pilih fail kurang daripada 2 MB.");
-      }
-
-      fileName = file.name;
-      fileData = await convertFileToBase64(file);
-    }
 
     let now = new Date();
     let createdDate = now.toLocaleDateString('ms-MY') + ' ' + now.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
@@ -308,8 +280,8 @@
     tasks.push({
       title: titleInput.value.trim(),
       desc: descInput.value.trim(),
-      fileName: fileName,
-      fileData: fileData,
+      fileName: null,
+      fileData: null,
       createdDate: createdDate,
       dueDate: dueDateInput.value,
       completed: false,
@@ -317,21 +289,13 @@
       notified: false
     });
 
-    try {
-      localStorage.setItem("myTasks", JSON.stringify(tasks));
-    } catch (e) {
-      alert("Storage browser telah penuh! Sila padam beberapa tugasan lama atau fail besar.");
-      return;
-    }
-
+    localStorage.setItem("myTasks", JSON.stringify(tasks));
     titleInput.value = "";
     dueDateInput.value = "";
     descInput.value = "";
-    fileInput.value = "";
     renderTasks();
   }
 
-  // Tukar fail kepada Base64 String
   function convertFileToBase64(file) {
     return new Promise((resolve, reject) => {
       let reader = new FileReader();
@@ -373,18 +337,36 @@
     renderTasks();
   }
 
-  function saveEdit(index) {
+  async function saveEdit(index) {
     let editTitle = document.getElementById(`edit-title-${index}`).value.trim();
     let editDesc = document.getElementById(`edit-desc-${index}`).value.trim();
+    let editFileInput = document.getElementById(`edit-file-${index}`);
 
     if (!editTitle) return alert("Tajuk tidak boleh kosong!");
 
     let tasks = getTasks();
     tasks[index].title = editTitle;
     tasks[index].desc = editDesc;
-    tasks[index].notified = false;
 
-    localStorage.setItem("myTasks", JSON.stringify(tasks));
+    // Muat naik fail baharu jika ada dipilih
+    if (editFileInput.files.length > 0) {
+      let file = editFileInput.files[0];
+      
+      if (file.size > 2 * 1024 * 1024) {
+        return alert("Saiz fail terlalu besar! Sila pilih fail kurang daripada 2 MB.");
+      }
+
+      tasks[index].fileName = file.name;
+      tasks[index].fileData = await convertFileToBase64(file);
+    }
+
+    try {
+      localStorage.setItem("myTasks", JSON.stringify(tasks));
+    } catch (e) {
+      alert("Storage browser penuh! Gagal simpan fail ini.");
+      return;
+    }
+
     editingIndex = null;
     renderTasks();
   }
@@ -416,11 +398,18 @@
       let index = task.originalIndex;
       let li = document.createElement("li");
 
+      // Ruangan Edit (Tambah/Kemaskini Fail Di Sini)
       if (editingIndex === index) {
         li.innerHTML = `
           <div class="edit-box">
+            <span class="edit-label">✏️ EDIT TUGASAN & TAMBAH FAIL</span>
             <input type="text" id="edit-title-${index}" value="${task.title}">
             <textarea id="edit-desc-${index}">${task.desc || ''}</textarea>
+            
+            <label style="font-size: 11px; color: #94a3b8; font-weight: 600;">📎 Muat naik / Tukar Fail (Max 2MB):</label>
+            <input type="file" id="edit-file-${index}" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx">
+            ${task.fileName ? `<span style="font-size:11px; color:#38bdf8;">Fail sedia ada: ${task.fileName}</span>` : ''}
+
             <div class="btn-row">
               <button class="save-btn" onclick="saveEdit(${index})">Simpan</button>
               <button class="cancel-btn" onclick="cancelEdit()">Batal</button>
@@ -458,7 +447,7 @@
               ${task.title}
             </div>
             ${task.desc ? `<div class="task-desc">${task.desc}</div>` : ''}
-            ${task.fileData ? `<a href="${task.fileData}" download="${task.fileName}" class="doc-link">📄 Buka / Muat Turun: ${task.fileName}</a>` : ''}
+            ${task.fileData ? `<a href="${task.fileData}" download="${task.fileName}" class="doc-link">📄 Buka / Download: ${task.fileName}</a>` : ''}
             <div class="meta-group">
               <div class="meta-item">
                 <span class="meta-label">KEY-IN DATE</span>
@@ -481,7 +470,7 @@
               `<button class="action-btn complete-btn" onclick="toggleTask(${index})">✓ Tekan Selesai</button>` : 
               `<button class="action-btn undo-btn" onclick="toggleTask(${index})">↩ Batal Selesai</button>`
             }
-            <button class="action-btn edit-btn" onclick="enableEdit(${index})" title="Edit Kerja">✏️</button>
+            <button class="action-btn edit-btn" onclick="enableEdit(${index})" title="Edit / Tambah Fail">✏️</button>
             <button class="action-btn delete-btn" onclick="deleteTask(${index})" title="Padam">✕</button>
           </div>
         </div>

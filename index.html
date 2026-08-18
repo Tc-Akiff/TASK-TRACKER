@@ -168,10 +168,9 @@
 
 <div class="container">
   <div class="header-row">
-    <!-- Menggunakan fail 'penang' -->
     <h1>
-      <img src="penang" alt="Jata Penang" class="logo-custom">
-      <span>TASK TRACKER</span>
+      <img src="penang.png" alt="Jata Penang" class="logo-custom">
+      <span>WorkFlow HQ</span>
     </h1>
     <button class="notif-btn" onclick="requestNotificationPermission()">🔔 Aktifkan Notifikasi</button>
   </div>
@@ -239,7 +238,7 @@
           let title = diffMinutes < 0 ? `⚠️ OVERDUE: ${task.title}` : `⚡ DUE DEKAT: ${task.title}`;
           let body = diffMinutes < 0 ? `Kerja ini telah melepasi masa due!` : `Masa due tinggal kurang 30 minit lagi!`;
 
-          new Notification(title, { body: body, icon: 'penang' });
+          new Notification(title, { body: body, icon: 'penang.png' });
           task.notified = true;
           localStorage.setItem("myTasks", JSON.stringify(tasks));
         }

@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TASK TRACKER</title>
-  <!-- Import Fon Moden & Kemas: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -24,9 +23,8 @@
     
     .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
     
-    /* Tajuk Lebih Besar, Jelas & Kemas */
     h1 { 
-      font-size: 38px; 
+      font-size: 36px; 
       font-weight: 900; 
       letter-spacing: -1px;
       color: #ffffff; 
@@ -34,8 +32,16 @@
       text-shadow: 0 0 20px rgba(56, 189, 248, 0.4); 
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
     }
+    
+    .logo-custom {
+      height: 52px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.8)) brightness(1.2);
+    }
+
     h1 span {
       background: linear-gradient(90deg, #38bdf8 0%, #818cf8 100%);
       -webkit-background-clip: text;
@@ -162,8 +168,10 @@
 
 <div class="container">
   <div class="header-row">
-    <!-- Tajuk Dibesarkan & Mempunyai Tulisan Gradient -->
-    <h1>⚡ <span>TASK TRACKER</span></h1>
+    <h1>
+      <img src="logo.png" alt="Jata Penang" class="logo-custom">
+      <span>TASK TRACKER</span>
+    </h1>
     <button class="notif-btn" onclick="requestNotificationPermission()">🔔 Aktifkan Notifikasi</button>
   </div>
 
@@ -230,7 +238,7 @@
           let title = diffMinutes < 0 ? `⚠️ OVERDUE: ${task.title}` : `⚡ DUE DEKAT: ${task.title}`;
           let body = diffMinutes < 0 ? `Kerja ini telah melepasi masa due!` : `Masa due tinggal kurang 30 minit lagi!`;
 
-          new Notification(title, { body: body, icon: 'https://cdn-icons-png.flaticon.com/512/1827/1827504.png' });
+          new Notification(title, { body: body, icon: 'logo.png' });
           task.notified = true;
           localStorage.setItem("myTasks", JSON.stringify(tasks));
         }

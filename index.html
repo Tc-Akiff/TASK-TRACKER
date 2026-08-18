@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WorkFlow HQ</title>
+  <title>TASK TRACKER</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -19,12 +19,12 @@
       display: flex;
       justify-content: center;
     }
-    .container { width: 100%; max-width: 900px; }
+    .container { width: 100%; max-width: 950px; }
     
     .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
     
     h1 { 
-      font-size: 38px; 
+      font-size: 42px; 
       font-weight: 900; 
       letter-spacing: -1px;
       color: #ffffff; 
@@ -32,14 +32,15 @@
       text-shadow: 0 0 20px rgba(56, 189, 248, 0.4); 
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 20px;
     }
     
+    /* Logo Jata Penang Saiz 150px */
     .logo-custom {
-      height: 75px;
+      height: 150px;
       width: auto;
       object-fit: contain;
-      filter: drop-shadow(0 0 12px rgba(56, 189, 248, 0.8));
+      filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.8));
     }
 
     h1 span {
@@ -52,7 +53,7 @@
       background: rgba(56, 189, 248, 0.15);
       border: 1px solid #38bdf8;
       color: #38bdf8;
-      padding: 10px 18px;
+      padding: 12px 22px;
       border-radius: 20px;
       font-size: 13px;
       font-weight: 600;
@@ -189,8 +190,9 @@
 <div class="container">
   <div class="header-row">
     <h1>
-      <img src="https://upload.wikimedia.org/wikipedia/commons/8/87/Coat_of_arms_of_Penang.svg" alt="Jata Penang" class="logo-custom">
-      <span>WorkFlow HQ</span>
+      <!-- Gambar Penang.png Local Saiz 150px -->
+      <img src="penang.png" alt="Jata Penang" class="logo-custom">
+      <span>TASK TRACKER</span>
     </h1>
     <button class="notif-btn" onclick="requestNotificationPermission()">🔔 Aktifkan Notifikasi</button>
   </div>
@@ -258,7 +260,7 @@
           let title = diffMinutes < 0 ? `⚠️ OVERDUE: ${task.title}` : `⚡ DUE DEKAT: ${task.title}`;
           let body = diffMinutes < 0 ? `Kerja ini telah melepasi masa due!` : `Masa due tinggal kurang 30 minit lagi!`;
 
-          new Notification(title, { body: body, icon: 'https://upload.wikimedia.org/wikipedia/commons/8/87/Coat_of_arms_of_Penang.svg' });
+          new Notification(title, { body: body, icon: 'penang.png' });
           task.notified = true;
           localStorage.setItem("myTasks", JSON.stringify(tasks));
         }
@@ -348,8 +350,7 @@
     tasks[index].title = editTitle;
     tasks[index].desc = editDesc;
 
-    // Muat naik fail baharu jika ada dipilih
-    if (editFileInput.files.length > 0) {
+    if (editFileInput && editFileInput.files.length > 0) {
       let file = editFileInput.files[0];
       
       if (file.size > 2 * 1024 * 1024) {
@@ -398,7 +399,6 @@
       let index = task.originalIndex;
       let li = document.createElement("li");
 
-      // Ruangan Edit (Tambah/Kemaskini Fail Di Sini)
       if (editingIndex === index) {
         li.innerHTML = `
           <div class="edit-box">

@@ -87,12 +87,22 @@
     }
     input[type="text"] { flex: 2; min-width: 200px; }
     
-    /* Tetapan Khas Input Tarikh (Boleh Klik Mana-mana Ruangan) */
+    /* Hanya Papar Ikon Kalendar, Buang Teks dd/mm/yyyy */
     input[type="datetime-local"] { 
-      flex: 1; 
-      min-width: 180px; 
+      min-width: 50px; 
+      width: 55px;
       color-scheme: dark; 
       cursor: pointer;
+      text-indent: -9999px; /* Padam teks placeholder */
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+
+    /* Kembalikan teks apabila tarikh dah dipilih */
+    input[type="datetime-local"]:valid, input[type="datetime-local"]:focus {
+      width: auto;
+      text-indent: 0px;
+      flex: 1;
     }
     
     textarea { width: 100%; resize: vertical; min-height: 70px; }
@@ -208,8 +218,8 @@
     <div class="form-row">
       <div class="input-group-top">
         <input type="text" id="taskInput" placeholder="NAMA KERJA">
-        <!-- Automatik Buka Kalendar Apabila Klik Mana-mana Ruangan Kotak Tarikh -->
-        <input type="datetime-local" id="dueDateInput" onclick="this.showPicker()">
+        <!-- Kotak Kecil Mengandungi Ikon Kalendar Sahaja -->
+        <input type="datetime-local" id="dueDateInput" onclick="this.showPicker()" title="Pilih Tarikh & Masa Due">
       </div>
       <textarea id="descInput" placeholder="DESCRIPTION / NOTA KERJA..."></textarea>
       <button class="add-btn" onclick="addTask()">+ TAMBAH KERJA</button>

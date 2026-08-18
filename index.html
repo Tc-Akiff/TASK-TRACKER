@@ -72,9 +72,9 @@
     }
     .input-label { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; color: #94a3b8; margin-bottom: 12px; display: block; }
     .form-row { display: flex; flex-direction: column; gap: 14px; }
-    .input-group-top { display: flex; gap: 12px; flex-wrap: wrap; }
+    .input-group-top { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
     
-    input[type="text"], input[type="datetime-local"], textarea, input[type="file"] {
+    input[type="text"], textarea, input[type="file"] {
       background: rgba(11, 17, 30, 0.8);
       border: 1px solid rgba(0, 210, 255, 0.2);
       color: #7dd3fc;
@@ -87,22 +87,41 @@
     }
     input[type="text"] { flex: 2; min-width: 200px; }
     
-    /* Hanya Papar Ikon Kalendar, Buang Teks dd/mm/yyyy */
-    input[type="datetime-local"] { 
-      min-width: 50px; 
-      width: 55px;
-      color-scheme: dark; 
-      cursor: pointer;
-      text-indent: -9999px; /* Padam teks placeholder */
-      padding-left: 12px;
-      padding-right: 12px;
+    /* Bekas Khas Tarikh - Gabungkan Butang Ikon Dan Teks Ringkas */
+    .date-picker-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
     }
 
-    /* Kembalikan teks apabila tarikh dah dipilih */
-    input[type="datetime-local"]:valid, input[type="datetime-local"]:focus {
-      width: auto;
-      text-indent: 0px;
-      flex: 1;
+    /* Sembunyikan Input Asal Pelayar */
+    .hidden-date-input {
+      position: absolute;
+      opacity: 0;
+      width: 1px;
+      height: 1px;
+      pointer-events: none;
+    }
+
+    /* Butang Ikon Kalendar Khas */
+    .custom-date-btn {
+      background: rgba(11, 17, 30, 0.8);
+      border: 1px solid rgba(0, 210, 255, 0.2);
+      color: #7dd3fc;
+      padding: 14px 18px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+    .custom-date-btn:hover {
+      border-color: #38bdf8;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+      background: rgba(16, 25, 45, 0.9);
     }
     
     textarea { width: 100%; resize: vertical; min-height: 70px; }
@@ -218,8 +237,15 @@
     <div class="form-row">
       <div class="input-group-top">
         <input type="text" id="taskInput" placeholder="NAMA KERJA">
-        <!-- Kotak Kecil Mengandungi Ikon Kalendar Sahaja -->
-        <input type="datetime-local" id="dueDateInput" onclick="this.showPicker()" title="Pilih Tarikh & Masa Due">
+        
+        <!-- Hanya Butang Ikon Kalendar Sahaja -->
+        <div class="date-picker-wrapper">
+          <input type="datetime-local" id="dueDateInput" class="hidden-date-input" onchange="updateDateDisplay()">
+          <button type="button" class="custom-date-btn" onclick="openCalendar()">
+            📅 <span id="dateBtnText">Pilih Due Date</span>
+          </button>
+        </div>
+
       </div>
       <textarea id="descInput" placeholder="DESCRIPTION / NOTA KERJA..."></textarea>
       <button class="add-btn" onclick="addTask()">+ TAMBAH KERJA</button>
@@ -242,6 +268,24 @@
     renderTasks();
     setInterval(checkDueNotifications, 30000); 
   });
+
+  // Buka Kalendar Bila Tekan Butang Ikon
+  function openCalendar() {
+    let dateInput = document.getElementById("dueDateInput");
+    dateInput.showPicker();
+  }
+
+  // Paparkan Masa Yang Dipilih Pada Butang
+  function updateDateDisplay() {
+    let dateInput = document.getElementById("dueDateInput");
+    let btnText = document.getElementById("dateBtnText");
+    if (dateInput.value) {
+      let d = new Date(dateInput.value);
+      btnText.innerText = d.toLocaleDateString('ms-MY') + ' ' + d.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
+    } else {
+      btnText.innerText = "Pilih Due Date";
+    }
+  }
 
   function switchTab(tab) {
     currentTab = tab;
@@ -312,6 +356,7 @@
     titleInput.value = "";
     dueDateInput.value = "";
     descInput.value = "";
+    document.getElementById("dateBtnText").innerText = "Pilih Due Date";
     renderTasks();
   }
 

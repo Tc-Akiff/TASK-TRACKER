@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WorkFlow HQ</title>
+  <!-- Import Fon Moden & Kemas: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <style>
+    * { box-sizing: border-box; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+    body {
+      background: linear-gradient(135deg, #0b111e 0%, #10192d 50%, #082032 100%);
+      color: #e2e8f0;
+      min-height: 100vh;
+      margin: 0;
+      padding: 40px 20px;
+      display: flex;
+      justify-content: center;
+    }
+    .container { width: 100%; max-width: 900px; }
+    
+    .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    
+    /* Tajuk Lebih Besar, Jelas & Kemas */
+    h1 { 
+      font-size: 38px; 
+      font-weight: 900; 
+      letter-spacing: -1px;
+      color: #ffffff; 
+      margin: 0; 
+      text-shadow: 0 0 20px rgba(56, 189, 248, 0.4); 
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    h1 span {
+      background: linear-gradient(90deg, #38bdf8 0%, #818cf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .notif-btn {
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid #38bdf8;
+      color: #38bdf8;
+      padding: 10px 18px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .notif-btn:hover { background: #38bdf8; color: #0b111e; box-shadow: 0 0 15px rgba(56, 189, 248, 0.4); }
+
+    .card-input {
+      background: rgba(16, 25, 45, 0.6);
+      border: 1px solid rgba(0, 210, 255, 0.2);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      backdrop-filter: blur(8px);
+    }
+    .input-label { font-size: 12px; font-weight: 700; letter-spacing: 1.5px; color: #94a3b8; margin-bottom: 12px; display: block; }
+    .form-row { display: flex; flex-direction: column; gap: 14px; }
+    .input-group-top { display: flex; gap: 12px; flex-wrap: wrap; }
+    
+    input[type="text"], input[type="datetime-local"], textarea {
+      background: rgba(11, 17, 30, 0.8);
+      border: 1px solid rgba(0, 210, 255, 0.2);
+      color: #7dd3fc;
+      padding: 14px 18px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+    input[type="text"] { flex: 2; min-width: 200px; }
+    input[type="datetime-local"] { flex: 1; min-width: 180px; color-scheme: dark; }
+    textarea { width: 100%; resize: vertical; min-height: 70px; }
+    input:focus, textarea:focus { border-color: #38bdf8; box-shadow: 0 0 12px rgba(56, 189, 248, 0.3); }
+
+    button.add-btn {
+      background: linear-gradient(90deg, #2563eb 0%, #0284c7 100%);
+      color: #fff;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(2, 132, 199, 0.4);
+      transition: all 0.3s ease;
+      align-self: flex-end;
+    }
+    button.add-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(2, 132, 199, 0.6); }
+
+    .tabs-container { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px; }
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: #64748b;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.3s;
+    }
+    .tab-btn.active { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+
+    ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 14px; }
+    
+    li {
+      background: rgba(16, 25, 45, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 18px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      transition: all 0.3s ease;
+    }
+    li:hover { border-color: rgba(56, 189, 248, 0.4); background: rgba(16, 25, 45, 0.8); }
+
+    .task-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; }
+    .task-title { font-size: 17px; font-weight: 700; color: #38bdf8; }
+    .task-desc { font-size: 14px; color: #94a3b8; white-space: pre-wrap; margin-top: 6px; line-height: 1.5; }
+    
+    .meta-group { display: flex; gap: 24px; text-align: left; margin-top: 8px; }
+    .meta-item { display: flex; flex-direction: column; }
+    .meta-label { font-size: 10px; color: #64748b; font-weight: 800; letter-spacing: 0.5px; }
+    .meta-val { font-size: 12px; color: #cbd5e1; font-weight: 500; }
+
+    .status-box { display: flex; align-items: center; gap: 10px; }
+    .badge { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
+    .badge-overdue { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+    .badge-warning { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
+    .badge-done { background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid #22c55e; }
+    
+    .completed .task-title { color: #94a3b8; text-decoration: line-through; }
+
+    .action-btn { background: transparent; border: none; cursor: pointer; font-size: 15px; opacity: 0.8; transition: 0.2s; padding: 4px; }
+    .action-btn:hover { opacity: 1; transform: scale(1.15); }
+    .edit-btn { color: #38bdf8; }
+    .delete-btn { color: #ef4444; }
+    .complete-btn { background: rgba(34, 197, 94, 0.2); border: 1px solid #22c55e; color: #4ade80; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; }
+    .undo-btn { background: rgba(245, 158, 11, 0.2); border: 1px solid #f59e0b; color: #fbbf24; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; }
+
+    .edit-box { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+    .btn-row { display: flex; gap: 8px; justify-content: flex-end; }
+    .save-btn { background: #22c55e; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
+    .cancel-btn { background: #64748b; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header-row">
+    <!-- Tajuk Dibesarkan & Mempunyai Tulisan Gradient -->
+    <h1>⚡ <span>WorkFlow HQ</span></h1>
+    <button class="notif-btn" onclick="requestNotificationPermission()">🔔 Aktifkan Notifikasi</button>
+  </div>
+
+  <div class="card-input">
+    <span class="input-label">TAMBAH KERJA BARU</span>
+    <div class="form-row">
+      <div class="input-group-top">
+        <input type="text" id="taskInput" placeholder="NAMA KERJA">
+        <input type="datetime-local" id="dueDateInput">
+      </div>
+      <textarea id="descInput" placeholder="DESCRIPTION / NOTA KERJA..."></textarea>
+      <button class="add-btn" onclick="addTask()">+ TAMBAH KERJA</button>
+    </div>
+  </div>
+
+  <div class="tabs-container">
+    <button class="tab-btn active" id="tabActive" onclick="switchTab('active')">📌 Kerja Aktif (<span id="countActive">0</span>)</button>
+    <button class="tab-btn" id="tabCompleted" onclick="switchTab('completed')">✅ Slot Selesai (<span id="countCompleted">0</span>)</button>
+  </div>
+
+  <ul id="taskList"></ul>
+</div>
+
+<script>
+  let editingIndex = null;
+  let currentTab = 'active';
+
+  document.addEventListener("DOMContentLoaded", () => {
+    renderTasks();
+    setInterval(checkDueNotifications, 30000); 
+  });
+
+  function switchTab(tab) {
+    currentTab = tab;
+    document.getElementById("tabActive").classList.toggle("active", tab === 'active');
+    document.getElementById("tabCompleted").classList.toggle("active", tab === 'completed');
+    renderTasks();
+  }
+
+  function requestNotificationPermission() {
+    if ("Notification" in window) {
+      Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+          alert("Notifikasi berjaya diaktifkan!");
+        } else {
+          alert("Kebenaran notifikasi ditolak.");
+        }
+      });
+    }
+  }
+
+  function checkDueNotifications() {
+    if (!("Notification" in window) || Notification.permission !== "granted") return;
+    let tasks = getTasks();
+    let now = new Date();
+
+    tasks.forEach((task) => {
+      if (task.dueDate && !task.completed && !task.notified) {
+        let dueTime = new Date(task.dueDate);
+        let diffMs = dueTime - now;
+        let diffMinutes = diffMs / (1000 * 60);
+
+        if (diffMinutes <= 30) {
+          let title = diffMinutes < 0 ? `⚠️ OVERDUE: ${task.title}` : `⚡ DUE DEKAT: ${task.title}`;
+          let body = diffMinutes < 0 ? `Kerja ini telah melepasi masa due!` : `Masa due tinggal kurang 30 minit lagi!`;
+
+          new Notification(title, { body: body, icon: 'https://cdn-icons-png.flaticon.com/512/1827/1827504.png' });
+          task.notified = true;
+          localStorage.setItem("myTasks", JSON.stringify(tasks));
+        }
+      }
+    });
+  }
+
+  function addTask() {
+    let titleInput = document.getElementById("taskInput");
+    let dueDateInput = document.getElementById("dueDateInput");
+    let descInput = document.getElementById("descInput");
+
+    if (!titleInput.value.trim()) return alert("Sila masukkan nama kerja!");
+
+    let now = new Date();
+    let createdDate = now.toLocaleDateString('ms-MY') + ' ' + now.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
+
+    let tasks = getTasks();
+    tasks.push({
+      title: titleInput.value.trim(),
+      desc: descInput.value.trim(),
+      createdDate: createdDate,
+      dueDate: dueDateInput.value,
+      completed: false,
+      completedDate: null,
+      notified: false
+    });
+
+    localStorage.setItem("myTasks", JSON.stringify(tasks));
+    titleInput.value = "";
+    dueDateInput.value = "";
+    descInput.value = "";
+    renderTasks();
+  }
+
+  function toggleTask(index) {
+    let tasks = getTasks();
+    tasks[index].completed = !tasks[index].completed;
+    
+    if (tasks[index].completed) {
+      let now = new Date();
+      tasks[index].completedDate = now.toLocaleDateString('ms-MY') + ' ' + now.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
+    } else {
+      tasks[index].completedDate = null;
+    }
+
+    localStorage.setItem("myTasks", JSON.stringify(tasks));
+    renderTasks();
+  }
+
+  function deleteTask(index) {
+    let tasks = getTasks();
+    tasks.splice(index, 1);
+    localStorage.setItem("myTasks", JSON.stringify(tasks));
+    renderTasks();
+  }
+
+  function enableEdit(index) {
+    editingIndex = index;
+    renderTasks();
+  }
+
+  function cancelEdit() {
+    editingIndex = null;
+    renderTasks();
+  }
+
+  function saveEdit(index) {
+    let editTitle = document.getElementById(`edit-title-${index}`).value.trim();
+    let editDesc = document.getElementById(`edit-desc-${index}`).value.trim();
+
+    if (!editTitle) return alert("Tajuk tidak boleh kosong!");
+
+    let tasks = getTasks();
+    tasks[index].title = editTitle;
+    tasks[index].desc = editDesc;
+    tasks[index].notified = false;
+
+    localStorage.setItem("myTasks", JSON.stringify(tasks));
+    editingIndex = null;
+    renderTasks();
+  }
+
+  function getTasks() {
+    return JSON.parse(localStorage.getItem("myTasks")) || [];
+  }
+
+  function renderTasks() {
+    let list = document.getElementById("taskList");
+    list.innerHTML = "";
+    let tasks = getTasks();
+    let now = new Date();
+
+    let activeTasksCount = tasks.filter(t => !t.completed).length;
+    let completedTasksCount = tasks.filter(t => t.completed).length;
+    document.getElementById("countActive").innerText = activeTasksCount;
+    document.getElementById("countCompleted").innerText = completedTasksCount;
+
+    let filteredTasks = tasks.map((task, originalIndex) => ({ ...task, originalIndex }))
+                             .filter(task => currentTab === 'completed' ? task.completed : !task.completed);
+
+    if (filteredTasks.length === 0) {
+      list.innerHTML = `<p style='text-align:center; color:#64748b; font-weight:500;'>Tiada rekod dalam slot ${currentTab === 'completed' ? 'Selesai' : 'Aktif'}.</p>`;
+      return;
+    }
+
+    filteredTasks.forEach((task) => {
+      let index = task.originalIndex;
+      let li = document.createElement("li");
+
+      if (editingIndex === index) {
+        li.innerHTML = `
+          <div class="edit-box">
+            <input type="text" id="edit-title-${index}" value="${task.title}">
+            <textarea id="edit-desc-${index}">${task.desc || ''}</textarea>
+            <div class="btn-row">
+              <button class="save-btn" onclick="saveEdit(${index})">Simpan</button>
+              <button class="cancel-btn" onclick="cancelEdit()">Batal</button>
+            </div>
+          </div>
+        `;
+        list.appendChild(li);
+        return;
+      }
+
+      let statusHtml = '<span class="badge badge-done">IN PROGRESS</span>';
+      let formattedDue = "Tiada";
+
+      if (task.dueDate) {
+        let dueTime = new Date(task.dueDate);
+        formattedDue = dueTime.toLocaleDateString('ms-MY') + ' ' + dueTime.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
+        let diffMs = dueTime - now;
+
+        if (diffMs < 0 && !task.completed) {
+          statusHtml = '<span class="badge badge-overdue">⚠️ OVERDUE</span>';
+        } else if (diffMs <= 86400000 && !task.completed) {
+          statusHtml = '<span class="badge badge-warning">⚡ DEKAT DUE</span>';
+        }
+      }
+
+      if (task.completed) {
+        li.classList.add("completed");
+        statusHtml = '<span class="badge badge-done">✓ SELESAI</span>';
+      }
+
+      li.innerHTML = `
+        <div class="task-header">
+          <div style="flex: 1;">
+            <div class="task-title">
+              ${task.title}
+            </div>
+            ${task.desc ? `<div class="task-desc">${task.desc}</div>` : ''}
+            <div class="meta-group">
+              <div class="meta-item">
+                <span class="meta-label">KEY-IN DATE</span>
+                <span class="meta-val">${task.createdDate}</span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-label">DUE DATE</span>
+                <span class="meta-val">${formattedDue}</span>
+              </div>
+              ${task.completedDate ? `
+              <div class="meta-item">
+                <span class="meta-label">DISIAPKAN PADA</span>
+                <span class="meta-val" style="color: #4ade80;">${task.completedDate}</span>
+              </div>` : ''}
+            </div>
+          </div>
+          <div class="status-box">
+            ${statusHtml}
+            ${!task.completed ? 
+              `<button class="action-btn complete-btn" onclick="toggleTask(${index})">✓ Tekan Selesai</button>` : 
+              `<button class="action-btn undo-btn" onclick="toggleTask(${index})">↩ Batal Selesai</button>`
+            }
+            <button class="action-btn edit-btn" onclick="enableEdit(${index})" title="Edit Kerja">✏️</button>
+            <button class="action-btn delete-btn" onclick="deleteTask(${index})" title="Padam">✕</button>
+          </div>
+        </div>
+      `;
+      list.appendChild(li);
+    });
+  }
+</script>
+
+</body>
+</html>

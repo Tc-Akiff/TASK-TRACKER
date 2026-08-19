@@ -225,7 +225,7 @@
     <div class="auth-form">
       <input type="text" id="authUsername" placeholder="Username (contoh: akiff)">
       <input type="password" id="authPassword" placeholder="Kata Laluan">
-      <button class="auth-btn-main" onclick="handleAuth()">Teruskan</button>
+      <button class="auth-btn-main" onclick="handleAuth()" id="authSubmitBtn">Log Masuk</button>
     </div>
     <div class="auth-toggle" onclick="toggleAuthMode()" id="authToggleText">Belum ada akaun? Daftar sekarang</div>
   </div>
@@ -293,6 +293,7 @@
   function toggleAuthMode() {
     isSignUpMode = !isSignUpMode;
     document.getElementById("authTitle").innerText = isSignUpMode ? "Daftar Akaun Baru" : "Log Masuk Akaun";
+    document.getElementById("authSubmitBtn").innerText = isSignUpMode ? "Daftar Sekarang" : "Log Masuk";
     document.getElementById("authToggleText").innerText = isSignUpMode ? "Dah ada akaun? Log masuk" : "Belum ada akaun? Daftar sekarang";
   }
 
@@ -303,21 +304,21 @@
     if (!rawInput || !password) return alert("Sila masukkan username & kata laluan!");
     if (rawInput.includes(" ")) return alert("Username tidak boleh ada jarak (space)!");
 
+    // Pastikan domain konsisten untuk pendaftaran & log masuk
     const generatedEmail = `${rawInput}@system.local`;
 
     try {
       if (isSignUpMode) {
         await window.fbMethods.createUserWithEmailAndPassword(window.auth, generatedEmail, password);
-        alert(`🎉 Akaun '${rawInput}' BERJAYA dicipta!\n\nSila guna butang 'Log Masuk' sekarang.`);
-        toggleAuthMode();
+        alert(`🎉 Akaun '${rawInput}' BERJAYA dicipta! Anda kini log masuk.`);
       } else {
         await window.fbMethods.signInWithEmailAndPassword(window.auth, generatedEmail, password);
       }
     } catch (err) {
       if (err.code === 'auth/email-already-in-use') {
-        alert("⚠️ Username ini telah pun didaftarkan sebelum ini!\n\nSila tukar ke mod Log Masuk.");
+        alert("⚠️ Username ini telah wujud!\n\nSila tukar ke mod Log Masuk atau guna username lain.");
       } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-        alert("❌ Username atau kata laluan salah! Pastikan anda dah 'Daftar' dulu jika akaun baru.");
+        alert("❌ Username atau kata laluan salah!\n\nJika anda belum ada akaun, sila tekan 'Daftar sekarang' dulu.");
       } else {
         alert("Ralat: " + err.message);
       }

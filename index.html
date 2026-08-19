@@ -49,7 +49,7 @@
     }
 
     .user-panel { display: flex; align-items: center; gap: 12px; }
-    .user-email { font-size: 13px; color: #38bdf8; font-weight: 600; }
+    .user-email { font-size: 13px; color: #38bdf8; font-weight: 600; text-transform: uppercase; }
     
     .btn-auth {
       background: rgba(239, 68, 68, 0.15);
@@ -102,7 +102,7 @@
     .form-row { display: flex; flex-direction: column; gap: 14px; }
     .input-group-top { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
     
-    input[type="text"], input[type="email"], input[type="password"], textarea, input[type="file"] {
+    input[type="text"], input[type="password"], textarea, input[type="file"] {
       background: rgba(11, 17, 30, 0.8);
       border: 1px solid rgba(0, 210, 255, 0.2);
       color: #7dd3fc;
@@ -155,8 +155,6 @@
     .task-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; }
     .task-title { font-size: 17px; font-weight: 700; color: #38bdf8; }
     .task-desc { font-size: 14px; color: #94a3b8; white-space: pre-wrap; margin-top: 6px; }
-    
-    .doc-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; padding: 6px 12px; background: rgba(56, 189, 248, 0.1); border: 1px dashed rgba(56, 189, 248, 0.4); color: #38bdf8; border-radius: 6px; font-size: 12px; font-weight: 600; text-decoration: none; width: fit-content; }
 
     .meta-group { display: flex; gap: 24px; margin-top: 8px; }
     .meta-item { display: flex; flex-direction: column; }
@@ -177,13 +175,11 @@
     .hidden { display: none !important; }
   </style>
 
-  <!-- Import SDK Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // Firebase Config Rasmi Kau
     const firebaseConfig = {
       apiKey: "AIzaSyCeS-iRm-16eVziAfo6D6SXP_sVZkz_HEk",
       authDomain: "task-tracker-150ee.firebaseapp.com",
@@ -206,30 +202,28 @@
 <body>
 
 <div class="container">
-  <!-- Header App -->
   <div class="header-row">
     <h1>
       <img src="penang.png" alt="Jata Penang" class="logo-custom">
       <span>TASK TRACKER</span>
     </h1>
     <div id="userPanel" class="user-panel hidden">
-      <span id="userEmailText" class="user-email"></span>
+      <span id="usernameDisplay" class="user-email"></span>
       <button class="btn-auth" onclick="handleLogout()">Log Keluar</button>
     </div>
   </div>
 
-  <!-- Borang Auth (Login / Sign Up) -->
+  <!-- Borang Auth Hanya Minta Username & Password -->
   <div id="authSection" class="auth-card">
     <h2 id="authTitle">Log Masuk Akaun</h2>
     <div class="auth-form">
-      <input type="email" id="authEmail" placeholder="Emel">
+      <input type="text" id="authUsername" placeholder="Username">
       <input type="password" id="authPassword" placeholder="Kata Laluan">
       <button class="auth-btn-main" onclick="handleAuth()">Teruskan</button>
     </div>
     <div class="auth-toggle" onclick="toggleAuthMode()" id="authToggleText">Belum ada akaun? Daftar sekarang</div>
   </div>
 
-  <!-- Kandungan Utama (App Task) -->
   <div id="appSection" class="hidden">
     <div class="card-input">
       <span class="input-label">TAMBAH KERJA BARU</span>
@@ -271,7 +265,9 @@
         window.fbMethods.onAuthStateChanged(window.auth, (user) => {
           if (user) {
             currentUser = user;
-            document.getElementById("userEmailText").innerText = user.email;
+            // Dapatkan username dari emel maya
+            const rawUsername = user.email.split('@')[0];
+            document.getElementById("usernameDisplay").innerText = "👤 " + rawUsername;
             document.getElementById("userPanel").classList.remove("hidden");
             document.getElementById("authSection").classList.add("hidden");
             document.getElementById("appSection").classList.remove("hidden");
@@ -295,18 +291,29 @@
   }
 
   async function handleAuth() {
-    const email = document.getElementById("authEmail").value.trim();
+    const usernameInput = document.getElementById("authUsername").value.trim().toLowerCase();
     const password = document.getElementById("authPassword").value.trim();
-    if (!email || !password) return alert("Sila masukkan emel & kata laluan!");
+
+    if (!usernameInput || !password) return alert("Sila masukkan username & kata laluan!");
+    if (usernameInput.includes(" ")) return alert("Username tidak boleh ada jarak (space)!");
+
+    // Cipta emel maya secara automatik
+    const generatedEmail = `${usernameInput}@workflow.local`;
 
     try {
       if (isSignUpMode) {
-        await window.fbMethods.createUserWithEmailAndPassword(window.auth, email, password);
+        await window.fbMethods.createUserWithEmailAndPassword(window.auth, generatedEmail, password);
       } else {
-        await window.fbMethods.signInWithEmailAndPassword(window.auth, email, password);
+        await window.fbMethods.signInWithEmailAndPassword(window.auth, generatedEmail, password);
       }
     } catch (err) {
-      alert("Ralat: " + err.message);
+      if (err.code === 'auth/email-already-in-use') {
+        alert("Username ini telah digunakan. Sila pilih username lain!");
+      } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+        alert("Username atau kata laluan salah!");
+      } else {
+        alert("Ralat: " + err.message);
+      }
     }
   }
 

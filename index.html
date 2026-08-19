@@ -20,7 +20,6 @@
       justify-content: center;
     }
     .container { width: 100%; max-width: 950px; }
-    
     .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
     
     h1 { 
@@ -35,18 +34,8 @@
       gap: 20px;
     }
     
-    .logo-custom {
-      height: 150px;
-      width: auto;
-      object-fit: contain;
-      filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.8));
-    }
-
-    h1 span {
-      background: linear-gradient(90deg, #38bdf8 0%, #818cf8 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
+    .logo-custom { height: 150px; width: auto; object-fit: contain; filter: drop-shadow(0 0 15px rgba(56, 189, 248, 0.8)); }
+    h1 span { background: linear-gradient(90deg, #38bdf8 0%, #818cf8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
     .user-panel { display: flex; align-items: center; gap: 12px; }
     .user-email { font-size: 14px; color: #38bdf8; font-weight: 700; text-transform: uppercase; }
@@ -176,33 +165,6 @@
 
     .hidden { display: none !important; }
   </style>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyCeS-iRm-16eVziAfo6D6SXP_sVZkz_HEk",
-      authDomain: "task-tracker-150ee.firebaseapp.com",
-      projectId: "task-tracker-150ee",
-      storageBucket: "task-tracker-150ee.firebasestorage.app",
-      messagingSenderId: "1046347983012",
-      appId: "1:1046347983012:web:16d59497424e955c7b9e31",
-      measurementId: "G-VE21HSQSEQ"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    window.auth = auth;
-    window.db = db;
-    window.fbMethods = { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, where };
-    
-    // Flag penanda sistem bersedia
-    window.firebaseReady = true;
-  </script>
 </head>
 <body>
 
@@ -214,18 +176,18 @@
     </h1>
     <div id="userPanel" class="user-panel hidden">
       <span id="usernameDisplay" class="user-email"></span>
-      <button class="btn-auth" onclick="handleLogout()">Log Keluar</button>
+      <button class="btn-auth" id="logoutBtn">Log Keluar</button>
     </div>
   </div>
 
   <div id="authSection" class="auth-card">
     <h2 id="authTitle">Log Masuk Akaun</h2>
-    <form class="auth-form" onsubmit="event.preventDefault(); handleAuth();">
+    <form class="auth-form" id="authForm">
       <input type="text" id="authUsername" placeholder="Username (contoh: akiff)" required>
       <input type="password" id="authPassword" placeholder="Kata Laluan" required>
       <button type="submit" class="auth-btn-main" id="authSubmitBtn">Log Masuk</button>
     </form>
-    <div class="auth-toggle" onclick="toggleAuthMode()" id="authToggleText">Belum ada akaun? Daftar sekarang</div>
+    <div class="auth-toggle" id="authToggleText">Belum ada akaun? Daftar sekarang</div>
   </div>
 
   <div id="appSection" class="hidden">
@@ -237,20 +199,38 @@
           <input type="datetime-local" id="dueDateInput" title="Pilih Tarikh & Masa Due">
         </div>
         <textarea id="descInput" placeholder="DESCRIPTION / NOTA KERJA..."></textarea>
-        <button class="add-btn" onclick="addTask()">+ TAMBAH KERJA</button>
+        <button class="add-btn" id="addTaskBtn">+ TAMBAH KERJA</button>
       </div>
     </div>
 
     <div class="tabs-container">
-      <button class="tab-btn active" id="tabActive" onclick="switchTab('active')">📌 Kerja Aktif (<span id="countActive">0</span>)</button>
-      <button class="tab-btn" id="tabCompleted" onclick="switchTab('completed')">✅ Slot Selesai (<span id="countCompleted">0</span>)</button>
+      <button class="tab-btn active" id="tabActive">📌 Kerja Aktif (<span id="countActive">0</span>)</button>
+      <button class="tab-btn" id="tabCompleted">✅ Slot Selesai (<span id="countCompleted">0</span>)</button>
     </div>
 
     <ul id="taskList"></ul>
   </div>
 </div>
 
-<script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCeS-iRm-16eVziAfo6D6SXP_sVZkz_HEk",
+    authDomain: "task-tracker-150ee.firebaseapp.com",
+    projectId: "task-tracker-150ee",
+    storageBucket: "task-tracker-150ee.firebasestorage.app",
+    messagingSenderId: "1046347983012",
+    appId: "1:1046347983012:web:16d59497424e955c7b9e31",
+    measurementId: "G-VE21HSQSEQ"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
   let currentUser = null;
   let isSignUpMode = false;
   let currentTab = 'active';
@@ -258,57 +238,32 @@
   let editingIndex = null;
   let unsubscribeFirestore = null;
 
-  window.addEventListener('load', () => {
-    const checkAuthInterval = setInterval(() => {
-      if (window.auth && window.firebaseReady) {
-        clearInterval(checkAuthInterval);
-        window.fbMethods.onAuthStateChanged(window.auth, (user) => {
-          if (user) {
-            currentUser = user;
-            const cleanUsername = user.email.split('@')[0];
-            document.getElementById("usernameDisplay").innerText = "👤 " + cleanUsername;
-            document.getElementById("userPanel").classList.remove("hidden");
-            document.getElementById("authSection").classList.add("hidden");
-            document.getElementById("appSection").classList.remove("hidden");
-            listenToTasks();
-          } else {
-            currentUser = null;
-            if (unsubscribeFirestore) unsubscribeFirestore();
-            document.getElementById("userPanel").classList.add("hidden");
-            document.getElementById("authSection").classList.remove("hidden");
-            document.getElementById("appSection").classList.add("hidden");
-          }
-        });
-      }
-    }, 100);
-  });
-
-  function toggleAuthMode() {
+  // Mod Toggle Login / Sign Up
+  document.getElementById("authToggleText").addEventListener("click", () => {
     isSignUpMode = !isSignUpMode;
     document.getElementById("authTitle").innerText = isSignUpMode ? "Daftar Akaun Baru" : "Log Masuk Akaun";
     document.getElementById("authSubmitBtn").innerText = isSignUpMode ? "Daftar Sekarang" : "Log Masuk";
     document.getElementById("authToggleText").innerText = isSignUpMode ? "Dah ada akaun? Log masuk" : "Belum ada akaun? Daftar sekarang";
-  }
+  });
 
-  async function handleAuth() {
-    if (!window.firebaseReady) {
-      return alert("Sistem sedang memuat turun sambungan, sila tunggu 2 saat dan cuba lagi.");
-    }
-
+  // Proses Authentication
+  document.getElementById("authForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
     let rawInput = document.getElementById("authUsername").value.trim().toLowerCase();
     const password = document.getElementById("authPassword").value.trim();
 
     if (!rawInput || !password) return alert("Sila masukkan username & kata laluan!");
     if (rawInput.includes(" ")) return alert("Username tidak boleh ada jarak (space)!");
 
-    const generatedEmail = `${rawInput}@system.local`;
+    // Menggunakan emel rasmi berformat sah untuk elakkan sekaan Firebase
+    const generatedEmail = `${rawInput}@gmail.com`;
 
     try {
       if (isSignUpMode) {
-        await window.fbMethods.createUserWithEmailAndPassword(window.auth, generatedEmail, password);
+        await createUserWithEmailAndPassword(auth, generatedEmail, password);
         alert(`🎉 Akaun '${rawInput}' BERJAYA dicipta! Anda kini log masuk.`);
       } else {
-        await window.fbMethods.signInWithEmailAndPassword(window.auth, generatedEmail, password);
+        await signInWithEmailAndPassword(auth, generatedEmail, password);
       }
     } catch (err) {
       if (err.code === 'auth/email-already-in-use') {
@@ -319,28 +274,50 @@
         alert("Ralat: " + err.message);
       }
     }
-  }
+  });
 
-  function handleLogout() {
-    window.fbMethods.signOut(window.auth);
-  }
+  // Listener Auth Status
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      currentUser = user;
+      const cleanUsername = user.email.split('@')[0];
+      document.getElementById("usernameDisplay").innerText = "👤 " + cleanUsername;
+      document.getElementById("userPanel").classList.remove("hidden");
+      document.getElementById("authSection").classList.add("hidden");
+      document.getElementById("appSection").classList.remove("hidden");
+      listenToTasks();
+    } else {
+      currentUser = null;
+      if (unsubscribeFirestore) unsubscribeFirestore();
+      document.getElementById("userPanel").classList.add("hidden");
+      document.getElementById("authSection").classList.remove("hidden");
+      document.getElementById("appSection").classList.add("hidden");
+    }
+  });
 
+  // Log Keluar
+  document.getElementById("logoutBtn").addEventListener("click", () => {
+    signOut(auth);
+  });
+
+  // Stream Data Tasks
   function listenToTasks() {
-    const q = window.fbMethods.query(
-      window.fbMethods.collection(window.db, "tasks"),
-      window.fbMethods.where("uid", "==", currentUser.uid)
+    const q = query(
+      collection(db, "tasks"),
+      where("uid", "==", currentUser.uid)
     );
 
-    unsubscribeFirestore = window.fbMethods.onSnapshot(q, (snapshot) => {
+    unsubscribeFirestore = onSnapshot(q, (snapshot) => {
       userTasks = [];
-      snapshot.forEach((doc) => {
-        userTasks.push({ id: doc.id, ...doc.data() });
+      snapshot.forEach((docSnap) => {
+        userTasks.push({ id: docSnap.id, ...docSnap.data() });
       });
       renderTasks();
     });
   }
 
-  async function addTask() {
+  // Tambah Task
+  document.getElementById("addTaskBtn").addEventListener("click", async () => {
     const titleInput = document.getElementById("taskInput");
     const dueDateInput = document.getElementById("dueDateInput");
     const descInput = document.getElementById("descInput");
@@ -350,7 +327,7 @@
     const now = new Date();
     const createdDate = now.toLocaleDateString('ms-MY') + ' ' + now.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
 
-    await window.fbMethods.addDoc(window.fbMethods.collection(window.db, "tasks"), {
+    await addDoc(collection(db, "tasks"), {
       uid: currentUser.uid,
       title: titleInput.value.trim(),
       desc: descInput.value.trim(),
@@ -365,8 +342,20 @@
     titleInput.value = "";
     dueDateInput.value = "";
     descInput.value = "";
+  });
+
+  // Switch Tab
+  document.getElementById("tabActive").addEventListener("click", () => switchTab('active'));
+  document.getElementById("tabCompleted").addEventListener("click", () => switchTab('completed'));
+
+  function switchTab(tab) {
+    currentTab = tab;
+    document.getElementById("tabActive").classList.toggle("active", tab === 'active');
+    document.getElementById("tabCompleted").classList.toggle("active", tab === 'completed');
+    renderTasks();
   }
 
+  // Conversion Base64
   function convertFileToBase64(file) {
     return new Promise((resolve, reject) => {
       let reader = new FileReader();
@@ -376,59 +365,7 @@
     });
   }
 
-  function enableEdit(index) {
-    editingIndex = index;
-    renderTasks();
-  }
-
-  function cancelEdit() {
-    editingIndex = null;
-    renderTasks();
-  }
-
-  async function saveEdit(id) {
-    const editTitle = document.getElementById(`edit-title-${id}`).value.trim();
-    const editDesc = document.getElementById(`edit-desc-${id}`).value.trim();
-    const editFileInput = document.getElementById(`edit-file-${id}`);
-
-    if (!editTitle) return alert("Tajuk tidak boleh kosong!");
-
-    const taskRef = window.fbMethods.doc(window.db, "tasks", id);
-    let updateData = { title: editTitle, desc: editDesc };
-
-    if (editFileInput && editFileInput.files.length > 0) {
-      let file = editFileInput.files[0];
-      if (file.size > 2 * 1024 * 1024) return alert("Saiz fail terlalu besar! Sila pilih fail kurang daripada 2 MB.");
-      updateData.fileName = file.name;
-      updateData.fileData = await convertFileToBase64(file);
-    }
-
-    await window.fbMethods.updateDoc(taskRef, updateData);
-    editingIndex = null;
-  }
-
-  async function toggleTask(id, currentStatus) {
-    const taskRef = window.fbMethods.doc(window.db, "tasks", id);
-    const now = new Date();
-    const completedDate = !currentStatus ? now.toLocaleDateString('ms-MY') + ' ' + now.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' }) : null;
-
-    await window.fbMethods.updateDoc(taskRef, {
-      completed: !currentStatus,
-      completedDate: completedDate
-    });
-  }
-
-  async function deleteTask(id) {
-    await window.fbMethods.deleteDoc(window.fbMethods.doc(window.db, "tasks", id));
-  }
-
-  function switchTab(tab) {
-    currentTab = tab;
-    document.getElementById("tabActive").classList.toggle("active", tab === 'active');
-    document.getElementById("tabCompleted").classList.toggle("active", tab === 'completed');
-    renderTasks();
-  }
-
+  // Render HTML Tasks
   function renderTasks() {
     const list = document.getElementById("taskList");
     list.innerHTML = "";
@@ -460,12 +397,15 @@
             <input type="file" id="edit-file-${task.id}" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx">
             ${task.fileName ? `<span style="font-size:11px; color:#38bdf8;">Fail sedia ada: ${task.fileName}</span>` : ''}
             <div class="btn-row">
-              <button class="save-btn" onclick="saveEdit('${task.id}')">Simpan</button>
-              <button class="cancel-btn" onclick="cancelEdit()">Batal</button>
+              <button class="save-btn" id="saveBtn-${task.id}">Simpan</button>
+              <button class="cancel-btn" id="cancelBtn">Batal</button>
             </div>
           </div>
         `;
         list.appendChild(li);
+
+        document.getElementById(`saveBtn-${task.id}`).addEventListener("click", () => saveEdit(task.id));
+        document.getElementById("cancelBtn").addEventListener("click", () => { editingIndex = null; renderTasks(); });
         return;
       }
 
@@ -500,14 +440,54 @@
           </div>
           <div class="status-box">
             ${statusHtml}
-            <button class="action-btn ${!task.completed ? 'complete-btn' : 'undo-btn'}" onclick="toggleTask('${task.id}', ${task.completed})">${!task.completed ? '✓ Tekan Selesai' : '↩ Batal Selesai'}</button>
-            <button class="action-btn" style="color:#38bdf8;" onclick="enableEdit(${idx})" title="Edit / Tambah Fail">✏️</button>
-            <button class="action-btn" style="color:#ef4444;" onclick="deleteTask('${task.id}')" title="Padam">✕</button>
+            <button class="action-btn ${!task.completed ? 'complete-btn' : 'undo-btn'}" id="toggleBtn-${task.id}">${!task.completed ? '✓ Tekan Selesai' : '↩ Batal Selesai'}</button>
+            <button class="action-btn" style="color:#38bdf8;" id="editBtn-${idx}" title="Edit / Tambah Fail">✏️</button>
+            <button class="action-btn" style="color:#ef4444;" id="deleteBtn-${task.id}" title="Padam">✕</button>
           </div>
         </div>
       `;
       list.appendChild(li);
+
+      document.getElementById(`toggleBtn-${task.id}`).addEventListener("click", () => toggleTask(task.id, task.completed));
+      document.getElementById(`editBtn-${idx}`).addEventListener("click", () => { editingIndex = idx; renderTasks(); });
+      document.getElementById(`deleteBtn-${task.id}`).addEventListener("click", () => deleteTask(task.id));
     });
+  }
+
+  async function saveEdit(id) {
+    const editTitle = document.getElementById(`edit-title-${id}`).value.trim();
+    const editDesc = document.getElementById(`edit-desc-${id}`).value.trim();
+    const editFileInput = document.getElementById(`edit-file-${id}`);
+
+    if (!editTitle) return alert("Tajuk tidak boleh kosong!");
+
+    const taskRef = doc(db, "tasks", id);
+    let updateData = { title: editTitle, desc: editDesc };
+
+    if (editFileInput && editFileInput.files.length > 0) {
+      let file = editFileInput.files[0];
+      if (file.size > 2 * 1024 * 1024) return alert("Saiz fail terlalu besar! Sila pilih fail kurang daripada 2 MB.");
+      updateData.fileName = file.name;
+      updateData.fileData = await convertFileToBase64(file);
+    }
+
+    await updateDoc(taskRef, updateData);
+    editingIndex = null;
+  }
+
+  async function toggleTask(id, currentStatus) {
+    const taskRef = doc(db, "tasks", id);
+    const now = new Date();
+    const completedDate = !currentStatus ? now.toLocaleDateString('ms-MY') + ' ' + now.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' }) : null;
+
+    await updateDoc(taskRef, {
+      completed: !currentStatus,
+      completedDate: completedDate
+    });
+  }
+
+  async function deleteTask(id) {
+    await deleteDoc(doc(db, "tasks", id));
   }
 </script>
 

@@ -49,7 +49,7 @@
     }
 
     .user-panel { display: flex; align-items: center; gap: 12px; }
-    .user-email { font-size: 13px; color: #38bdf8; font-weight: 600; text-transform: uppercase; }
+    .user-email { font-size: 14px; color: #38bdf8; font-weight: 700; text-transform: uppercase; }
     
     .btn-auth {
       background: rgba(239, 68, 68, 0.15);
@@ -64,7 +64,6 @@
     }
     .btn-auth:hover { background: #ef4444; color: #fff; }
 
-    /* Kad Login / Register */
     .auth-card {
       background: rgba(16, 25, 45, 0.8);
       border: 1px solid rgba(0, 210, 255, 0.2);
@@ -156,6 +155,8 @@
     .task-title { font-size: 17px; font-weight: 700; color: #38bdf8; }
     .task-desc { font-size: 14px; color: #94a3b8; white-space: pre-wrap; margin-top: 6px; }
 
+    .doc-link { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; padding: 6px 12px; background: rgba(56, 189, 248, 0.1); border: 1px dashed rgba(56, 189, 248, 0.4); color: #38bdf8; border-radius: 6px; font-size: 12px; font-weight: 600; text-decoration: none; width: fit-content; }
+
     .meta-group { display: flex; gap: 24px; margin-top: 8px; }
     .meta-item { display: flex; flex-direction: column; }
     .meta-label { font-size: 10px; color: #64748b; font-weight: 800; }
@@ -171,6 +172,12 @@
     .action-btn { background: transparent; border: none; cursor: pointer; font-size: 15px; opacity: 0.8; }
     .complete-btn { background: rgba(34, 197, 94, 0.2); border: 1px solid #22c55e; color: #4ade80; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; }
     .undo-btn { background: rgba(245, 158, 11, 0.2); border: 1px solid #f59e0b; color: #fbbf24; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 700; }
+
+    .edit-box { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+    .edit-label { font-size: 11px; color: #38bdf8; font-weight: 700; }
+    .btn-row { display: flex; gap: 8px; justify-content: flex-end; }
+    .save-btn { background: #22c55e; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
+    .cancel-btn { background: #64748b; color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
 
     .hidden { display: none !important; }
   </style>
@@ -213,11 +220,10 @@
     </div>
   </div>
 
-  <!-- Borang Auth Hanya Minta Username & Password -->
   <div id="authSection" class="auth-card">
     <h2 id="authTitle">Log Masuk Akaun</h2>
     <div class="auth-form">
-      <input type="text" id="authUsername" placeholder="Username">
+      <input type="text" id="authUsername" placeholder="Username (contoh: akiff)">
       <input type="password" id="authPassword" placeholder="Kata Laluan">
       <button class="auth-btn-main" onclick="handleAuth()">Teruskan</button>
     </div>
@@ -256,6 +262,7 @@
   let isSignUpMode = false;
   let currentTab = 'active';
   let userTasks = [];
+  let editingIndex = null;
   let unsubscribeFirestore = null;
 
   window.addEventListener('load', () => {
@@ -265,9 +272,8 @@
         window.fbMethods.onAuthStateChanged(window.auth, (user) => {
           if (user) {
             currentUser = user;
-            // Dapatkan username dari emel maya
-            const rawUsername = user.email.split('@')[0];
-            document.getElementById("usernameDisplay").innerText = "👤 " + rawUsername;
+            const cleanUsername = user.email.split('@')[0];
+            document.getElementById("usernameDisplay").innerText = "👤 " + cleanUsername;
             document.getElementById("userPanel").classList.remove("hidden");
             document.getElementById("authSection").classList.add("hidden");
             document.getElementById("appSection").classList.remove("hidden");
@@ -291,14 +297,18 @@
   }
 
   async function handleAuth() {
-    const usernameInput = document.getElementById("authUsername").value.trim().toLowerCase();
+    let usernameInput = document.getElementById("authUsername").value.trim().toLowerCase();
     const password = document.getElementById("authPassword").value.trim();
 
     if (!usernameInput || !password) return alert("Sila masukkan username & kata laluan!");
-    if (usernameInput.includes(" ")) return alert("Username tidak boleh ada jarak (space)!");
+    
+    // Bersihkan karakter tak sepatutnya
+    usernameInput = usernameInput.replace(/[^a-z0-9]/g, '');
 
-    // Cipta emel maya secara automatik
-    const generatedEmail = `${usernameInput}@workflow.local`;
+    if (!usernameInput) return alert("Username mestilah mengandungi huruf/nombor sahaja!");
+
+    // Tukar username jadi emel rahsia untuk Firebase
+    const generatedEmail = `${usernameInput}@system.local`;
 
     try {
       if (isSignUpMode) {
@@ -308,9 +318,11 @@
       }
     } catch (err) {
       if (err.code === 'auth/email-already-in-use') {
-        alert("Username ini telah digunakan. Sila pilih username lain!");
+        alert("Username ini telah wujud. Sila guna username lain!");
       } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
         alert("Username atau kata laluan salah!");
+      } else if (err.code === 'auth/configuration-not-found') {
+        alert("Sila Aktifkan (Enable) Email/Password di Firebase Console dahulu!");
       } else {
         alert("Ralat: " + err.message);
       }
@@ -350,6 +362,8 @@
       uid: currentUser.uid,
       title: titleInput.value.trim(),
       desc: descInput.value.trim(),
+      fileName: null,
+      fileData: null,
       createdDate: createdDate,
       dueDate: dueDateInput.value,
       completed: false,
@@ -360,6 +374,46 @@
     dueDateInput.value = "";
     descInput.value = "";
     document.getElementById("dateBtnText").innerText = "Pilih Due Date";
+  }
+
+  function convertFileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      let reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function enableEdit(index) {
+    editingIndex = index;
+    renderTasks();
+  }
+
+  function cancelEdit() {
+    editingIndex = null;
+    renderTasks();
+  }
+
+  async function saveEdit(id) {
+    const editTitle = document.getElementById(`edit-title-${id}`).value.trim();
+    const editDesc = document.getElementById(`edit-desc-${id}`).value.trim();
+    const editFileInput = document.getElementById(`edit-file-${id}`);
+
+    if (!editTitle) return alert("Tajuk tidak boleh kosong!");
+
+    const taskRef = window.fbMethods.doc(window.db, "tasks", id);
+    let updateData = { title: editTitle, desc: editDesc };
+
+    if (editFileInput && editFileInput.files.length > 0) {
+      let file = editFileInput.files[0];
+      if (file.size > 2 * 1024 * 1024) return alert("Saiz fail terlalu besar! Sila pilih fail kurang daripada 2 MB.");
+      updateData.fileName = file.name;
+      updateData.fileData = await convertFileToBase64(file);
+    }
+
+    await window.fbMethods.updateDoc(taskRef, updateData);
+    editingIndex = null;
   }
 
   async function toggleTask(id, currentStatus) {
@@ -414,8 +468,28 @@
     }
 
     const now = new Date();
-    filtered.forEach((task) => {
+    filtered.forEach((task, idx) => {
       const li = document.createElement("li");
+
+      if (editingIndex === idx) {
+        li.innerHTML = `
+          <div class="edit-box">
+            <span class="edit-label">✏️ EDIT TUGASAN & TAMBAH FAIL</span>
+            <input type="text" id="edit-title-${task.id}" value="${task.title}">
+            <textarea id="edit-desc-${task.id}">${task.desc || ''}</textarea>
+            <label style="font-size: 11px; color: #94a3b8; font-weight: 600;">📎 Muat naik / Tukar Fail (Max 2MB):</label>
+            <input type="file" id="edit-file-${task.id}" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx">
+            ${task.fileName ? `<span style="font-size:11px; color:#38bdf8;">Fail sedia ada: ${task.fileName}</span>` : ''}
+            <div class="btn-row">
+              <button class="save-btn" onclick="saveEdit('${task.id}')">Simpan</button>
+              <button class="cancel-btn" onclick="cancelEdit()">Batal</button>
+            </div>
+          </div>
+        `;
+        list.appendChild(li);
+        return;
+      }
+
       let statusHtml = '<span class="badge badge-done">IN PROGRESS</span>';
       let formattedDue = "Tiada";
 
@@ -438,6 +512,7 @@
           <div style="flex: 1;">
             <div class="task-title">${task.title}</div>
             ${task.desc ? `<div class="task-desc">${task.desc}</div>` : ''}
+            ${task.fileData ? `<a href="${task.fileData}" download="${task.fileName}" class="doc-link">📄 Buka / Download: ${task.fileName}</a>` : ''}
             <div class="meta-group">
               <div class="meta-item"><span class="meta-label">KEY-IN DATE</span><span class="meta-val">${task.createdDate}</span></div>
               <div class="meta-item"><span class="meta-label">DUE DATE</span><span class="meta-val">${formattedDue}</span></div>
@@ -447,7 +522,8 @@
           <div class="status-box">
             ${statusHtml}
             <button class="action-btn ${!task.completed ? 'complete-btn' : 'undo-btn'}" onclick="toggleTask('${task.id}', ${task.completed})">${!task.completed ? '✓ Tekan Selesai' : '↩ Batal Selesai'}</button>
-            <button class="action-btn" style="color:#ef4444;" onclick="deleteTask('${task.id}')">✕</button>
+            <button class="action-btn" style="color:#38bdf8;" onclick="enableEdit(${idx})" title="Edit / Tambah Fail">✏️</button>
+            <button class="action-btn" style="color:#ef4444;" onclick="deleteTask('${task.id}')" title="Padam">✕</button>
           </div>
         </div>
       `;

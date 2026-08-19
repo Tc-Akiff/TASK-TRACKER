@@ -297,18 +297,13 @@
   }
 
   async function handleAuth() {
-    let usernameInput = document.getElementById("authUsername").value.trim().toLowerCase();
+    let rawInput = document.getElementById("authUsername").value.trim().toLowerCase();
     const password = document.getElementById("authPassword").value.trim();
 
-    if (!usernameInput || !password) return alert("Sila masukkan username & kata laluan!");
-    
-    // Bersihkan karakter tak sepatutnya
-    usernameInput = usernameInput.replace(/[^a-z0-9]/g, '');
+    if (!rawInput || !password) return alert("Sila masukkan username & kata laluan!");
 
-    if (!usernameInput) return alert("Username mestilah mengandungi huruf/nombor sahaja!");
-
-    // Tukar username jadi emel rahsia untuk Firebase
-    const generatedEmail = `${usernameInput}@system.local`;
+    // Tukar username jadi emel rahsia tanpa memotong perkataan
+    const generatedEmail = `${rawInput}@system.local`;
 
     try {
       if (isSignUpMode) {
@@ -318,11 +313,11 @@
       }
     } catch (err) {
       if (err.code === 'auth/email-already-in-use') {
-        alert("Username ini telah wujud. Sila guna username lain!");
+        alert("Username ini telah wujud! Sila guna butang 'Log Masuk' atau daftar username lain.");
       } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
         alert("Username atau kata laluan salah!");
-      } else if (err.code === 'auth/configuration-not-found') {
-        alert("Sila Aktifkan (Enable) Email/Password di Firebase Console dahulu!");
+      } else if (err.code === 'auth/invalid-email') {
+        alert("Username tidak boleh ada jarak (space)!");
       } else {
         alert("Ralat: " + err.message);
       }

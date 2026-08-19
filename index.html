@@ -114,22 +114,17 @@
     }
     input[type="text"] { flex: 2; min-width: 200px; }
     
-    .date-picker-wrapper { position: relative; display: flex; align-items: center; }
-    .hidden-date-input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
-    .custom-date-btn {
+    input[type="datetime-local"] {
       background: rgba(11, 17, 30, 0.8);
       border: 1px solid rgba(0, 210, 255, 0.2);
       color: #7dd3fc;
-      padding: 14px 18px;
+      padding: 12px 14px;
       border-radius: 10px;
       font-size: 14px;
-      font-weight: 600;
+      color-scheme: dark;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
     }
-    
+
     textarea { width: 100%; resize: vertical; min-height: 70px; }
 
     button.add-btn {
@@ -204,6 +199,9 @@
     window.auth = auth;
     window.db = db;
     window.fbMethods = { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, where };
+    
+    // Flag penanda sistem bersedia
+    window.firebaseReady = true;
   </script>
 </head>
 <body>
@@ -222,11 +220,11 @@
 
   <div id="authSection" class="auth-card">
     <h2 id="authTitle">Log Masuk Akaun</h2>
-    <div class="auth-form">
-      <input type="text" id="authUsername" placeholder="Username (contoh: akiff)">
-      <input type="password" id="authPassword" placeholder="Kata Laluan">
-      <button class="auth-btn-main" onclick="handleAuth()" id="authSubmitBtn">Log Masuk</button>
-    </div>
+    <form class="auth-form" onsubmit="event.preventDefault(); handleAuth();">
+      <input type="text" id="authUsername" placeholder="Username (contoh: akiff)" required>
+      <input type="password" id="authPassword" placeholder="Kata Laluan" required>
+      <button type="submit" class="auth-btn-main" id="authSubmitBtn">Log Masuk</button>
+    </form>
     <div class="auth-toggle" onclick="toggleAuthMode()" id="authToggleText">Belum ada akaun? Daftar sekarang</div>
   </div>
 
@@ -236,12 +234,7 @@
       <div class="form-row">
         <div class="input-group-top">
           <input type="text" id="taskInput" placeholder="NAMA KERJA">
-          <div class="date-picker-wrapper">
-            <input type="datetime-local" id="dueDateInput" class="hidden-date-input" onchange="updateDateDisplay()">
-            <button type="button" class="custom-date-btn" onclick="openCalendar()">
-              📅 <span id="dateBtnText">Pilih Due Date</span>
-            </button>
-          </div>
+          <input type="datetime-local" id="dueDateInput" title="Pilih Tarikh & Masa Due">
         </div>
         <textarea id="descInput" placeholder="DESCRIPTION / NOTA KERJA..."></textarea>
         <button class="add-btn" onclick="addTask()">+ TAMBAH KERJA</button>
@@ -267,7 +260,7 @@
 
   window.addEventListener('load', () => {
     const checkAuthInterval = setInterval(() => {
-      if (window.auth) {
+      if (window.auth && window.firebaseReady) {
         clearInterval(checkAuthInterval);
         window.fbMethods.onAuthStateChanged(window.auth, (user) => {
           if (user) {
@@ -298,13 +291,16 @@
   }
 
   async function handleAuth() {
+    if (!window.firebaseReady) {
+      return alert("Sistem sedang memuat turun sambungan, sila tunggu 2 saat dan cuba lagi.");
+    }
+
     let rawInput = document.getElementById("authUsername").value.trim().toLowerCase();
     const password = document.getElementById("authPassword").value.trim();
 
     if (!rawInput || !password) return alert("Sila masukkan username & kata laluan!");
     if (rawInput.includes(" ")) return alert("Username tidak boleh ada jarak (space)!");
 
-    // Pastikan domain konsisten untuk pendaftaran & log masuk
     const generatedEmail = `${rawInput}@system.local`;
 
     try {
@@ -316,9 +312,9 @@
       }
     } catch (err) {
       if (err.code === 'auth/email-already-in-use') {
-        alert("⚠️ Username ini telah wujud!\n\nSila tukar ke mod Log Masuk atau guna username lain.");
+        alert("⚠️ Username ini telah wujud!\n\nTekan 'Dah ada akaun? Log masuk' di bawah untuk log masuk.");
       } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-        alert("❌ Username atau kata laluan salah!\n\nJika anda belum ada akaun, sila tekan 'Daftar sekarang' dulu.");
+        alert("❌ Username atau kata laluan salah!\n\nJika belum ada akaun, sila tekan 'Belum ada akaun? Daftar sekarang' di bawah.");
       } else {
         alert("Ralat: " + err.message);
       }
@@ -369,7 +365,6 @@
     titleInput.value = "";
     dueDateInput.value = "";
     descInput.value = "";
-    document.getElementById("dateBtnText").innerText = "Pilih Due Date";
   }
 
   function convertFileToBase64(file) {
@@ -425,18 +420,6 @@
 
   async function deleteTask(id) {
     await window.fbMethods.deleteDoc(window.fbMethods.doc(window.db, "tasks", id));
-  }
-
-  function openCalendar() { document.getElementById("dueDateInput").showPicker(); }
-  function updateDateDisplay() {
-    const dateInput = document.getElementById("dueDateInput");
-    const btnText = document.getElementById("dateBtnText");
-    if (dateInput.value) {
-      const d = new Date(dateInput.value);
-      btnText.innerText = d.toLocaleDateString('ms-MY') + ' ' + d.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
-    } else {
-      btnText.innerText = "Pilih Due Date";
-    }
   }
 
   function switchTab(tab) {

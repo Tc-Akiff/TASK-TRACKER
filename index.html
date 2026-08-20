@@ -238,7 +238,7 @@
   let editingIndex = null;
   let unsubscribeFirestore = null;
 
-  // Mod Toggle Login / Sign Up
+  // Toggle Login / Sign Up
   document.getElementById("authToggleText").addEventListener("click", () => {
     isSignUpMode = !isSignUpMode;
     document.getElementById("authTitle").innerText = isSignUpMode ? "Daftar Akaun Baru" : "Log Masuk Akaun";
@@ -246,7 +246,7 @@
     document.getElementById("authToggleText").innerText = isSignUpMode ? "Dah ada akaun? Log masuk" : "Belum ada akaun? Daftar sekarang";
   });
 
-  // Proses Authentication
+  // Proses Authentication (AUTO-LOGIN SELEPAS REGISTER)
   document.getElementById("authForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     let rawInput = document.getElementById("authUsername").value.trim().toLowerCase();
@@ -255,13 +255,12 @@
     if (!rawInput || !password) return alert("Sila masukkan username & kata laluan!");
     if (rawInput.includes(" ")) return alert("Username tidak boleh ada jarak (space)!");
 
-    // Menggunakan emel rasmi berformat sah untuk elakkan sekaan Firebase
-    const generatedEmail = `${rawInput}@gmail.com`;
+    const generatedEmail = `${rawInput}@system.local`;
 
     try {
       if (isSignUpMode) {
+        // Cipta akaun -> Firebase akan secara automatik daftarkan & log masuk kan user terus!
         await createUserWithEmailAndPassword(auth, generatedEmail, password);
-        alert(`🎉 Akaun '${rawInput}' BERJAYA dicipta! Anda kini log masuk.`);
       } else {
         await signInWithEmailAndPassword(auth, generatedEmail, password);
       }
@@ -276,7 +275,7 @@
     }
   });
 
-  // Listener Auth Status
+  // Listener status penukaran paparan automatik
   onAuthStateChanged(auth, (user) => {
     if (user) {
       currentUser = user;
@@ -295,13 +294,13 @@
     }
   });
 
-  // Log Keluar
   document.getElementById("logoutBtn").addEventListener("click", () => {
     signOut(auth);
   });
 
-  // Stream Data Tasks
   function listenToTasks() {
+    if (unsubscribeFirestore) unsubscribeFirestore();
+
     const q = query(
       collection(db, "tasks"),
       where("uid", "==", currentUser.uid)
@@ -316,7 +315,6 @@
     });
   }
 
-  // Tambah Task
   document.getElementById("addTaskBtn").addEventListener("click", async () => {
     const titleInput = document.getElementById("taskInput");
     const dueDateInput = document.getElementById("dueDateInput");
@@ -344,7 +342,6 @@
     descInput.value = "";
   });
 
-  // Switch Tab
   document.getElementById("tabActive").addEventListener("click", () => switchTab('active'));
   document.getElementById("tabCompleted").addEventListener("click", () => switchTab('completed'));
 
@@ -355,7 +352,6 @@
     renderTasks();
   }
 
-  // Conversion Base64
   function convertFileToBase64(file) {
     return new Promise((resolve, reject) => {
       let reader = new FileReader();
@@ -365,7 +361,6 @@
     });
   }
 
-  // Render HTML Tasks
   function renderTasks() {
     const list = document.getElementById("taskList");
     list.innerHTML = "";
